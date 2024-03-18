@@ -1,0 +1,49 @@
+mf_read_modify_status_new
+small_utils/mtserver.c
+
+
+mst:
+kernel/mst_main.c
+static int __init mst_init(void)
+    pci_get_device
+    pci_match_id
+    pci_domain_nr
+    mst_device_create
+        dev->vpd_cap_addr = pci_find_capability(pdev, PCI_CAP_ID_VPD)
+        alloc_chrdev_region
+        cdev_init(&dev->mcdev, &mst_fops) -> _mstconf
+
+
+static const struct file_operations mst_fops = {
+  .read = mst_read,
+  .write = mst_write,
+  .unlocked_ioctl = unlocked_ioctl,
+  .open = mst_open,
+  .release = mst_release,
+  .owner = THIS_MODULE,
+};
+unlocked_ioctl -> mst_ioctl
+     switch (opcode)
+     case MST_PARAMS
+        ...
+
+help, https://docs.nvidia.com/networking/display/mftv4250/linux
+mst.sh, tool
+mdir="/dev/mst"
+MST_CONF=/etc/mft/mst.conf
+venid="15b3"
+/etc/mst.conf
+###########
+case "$1" in -> 在目录 /dev/mst 中创建代表 NVIDIA 设备的特殊文件。 加载适当的内核模块并将 PCI 配置头保存在目录 /var/mst_pci 中。 成功完成此命令后，MST 驱动程序即可开始工作。 您可以通过编辑配置文件/etc/mft/mst.conf来配置启动命令，例如您可以重命名设备。
+    mst serverserv_start ->  ${mbindir}/mtserver -p $port -s $secret & -> small_utils/mtserver.c -> main
+        prepare_the_map_file
+        open_serv_connection
+        for (;;)
+            reads(con, buf, BUF_LEN, PT_TCP)
+            
+
+添加连接到第五代设备的电缆。 有一个选项可以添加 IB 结构中的电缆以进行电缆信息访问，需要安装 WinOF-2 和活动 IB 链路。 如果给出了 local_hca_id 和 local_hca_port，则扫描连接到给定端口的 IB 子网。 否则，将扫描所有设备。 选项： --with_ib：除了本地 PCI 设备之外，还添加带内电缆。 参数：[local_hca_id] [local_hca_port]
+
+
+
+
