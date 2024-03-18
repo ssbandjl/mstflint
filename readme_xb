@@ -37,7 +37,10 @@ venid="15b3"
 case "$1" in -> 在目录 /dev/mst 中创建代表 NVIDIA 设备的特殊文件。 加载适当的内核模块并将 PCI 配置头保存在目录 /var/mst_pci 中。 成功完成此命令后，MST 驱动程序即可开始工作。 您可以通过编辑配置文件/etc/mft/mst.conf来配置启动命令，例如您可以重命名设备。
     mst serverserv_start ->  ${mbindir}/mtserver -p $port -s $secret & -> small_utils/mtserver.c -> main
         prepare_the_map_file
+            load_dump_file
+            mwrite4
         open_serv_connection
+            listen
         for (;;)
             reads(con, buf, BUF_LEN, PT_TCP)
             
@@ -47,3 +50,12 @@ case "$1" in -> 在目录 /dev/mst 中创建代表 NVIDIA 设备的特殊文件�
 
 
 
+print_status
+    cat /proc/devices | grep mst_ppc
+    mdevices_info
+    ${PYTHON_EXEC} ${MFT_PYTHON_TOOLS}/gearbox/gearbox_status_script.py
+    print_ul_mdevices_info
+    ${PYTHON_EXEC} ${MFT_PYTHON_TOOLS}/gearbox/gearbox_status_script.py
+
+
+open_cli_connection
