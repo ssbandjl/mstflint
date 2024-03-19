@@ -1,3 +1,9 @@
+
+intro;
+从 mstflint-4.6.0 开始，hca_self_test.ofed 将不再是 msflint 软件包的一部分，它将在 Mellanox OFED 软件包提供的 ofed 脚本中找到。 此刻录工具只能与 Mellanox 制造的 HCA/NIC 卡一起使用。 将其与其他供应商制造的卡一起使用可能会对卡造成损害（由于配置不同）。 使用诊断工具通常对所有 HCA/NIC 都是安全的
+
+
+
 mf_read_modify_status_new
 small_utils/mtserver.c
 
@@ -40,10 +46,29 @@ case "$1" in -> 在目录 /dev/mst 中创建代表 NVIDIA 设备的特殊文件�
             load_dump_file
             mwrite4
         open_serv_connection
+            socket
             listen
+            accept
         for (;;)
             reads(con, buf, BUF_LEN, PT_TCP)
-            
+            switch (*buf)
+            case 'O': /*  Open mfile */
+                mopen -> mopen_ul_int
+                    mtcr_parse_name
+                    mtcr_driver_open
+                    mlx5ctl_driver_open
+            case 'C': /*  Close mfile */
+            case 'V': /*  Get version */
+            case 'R': /*  Read word */
+            case 'S': /*  Scan I2C bus */
+            case 'B':
+            case 'U':
+            case 'r': /*  Read I2C */
+            case 'w': /*  Read I2C */
+            case 'P':
+            case 'W': /*  Write word */
+            case 'A':
+
 
 添加连接到第五代设备的电缆。 有一个选项可以添加 IB 结构中的电缆以进行电缆信息访问，需要安装 WinOF-2 和活动 IB 链路。 如果给出了 local_hca_id 和 local_hca_port，则扫描连接到给定端口的 IB 子网。 否则，将扫描所有设备。 选项： --with_ib：除了本地 PCI 设备之外，还添加带内电缆。 参数：[local_hca_id] [local_hca_port]
 
@@ -59,3 +84,112 @@ print_status
 
 
 open_cli_connection
+
+
+case 'L': /*  Get devices list */
+get_devices_list
+
+
+
+ibvsmad_craccess_rw
+    ibvsmad_craccess_rw_smp
+
+
+export api: mtcr_ul/mtcr_icmd_cif.h
+
+
+cmdif/cmdif.py
+
+
+get_icmd_query_cap
+SEND_ICMD_FLOW
+mreg_send_wrapper
+    icmd_send_command_int
+        icmd_send_command_com
+
+
+
+
+install tool:
+%files
+%defattr(-,root,root)
+%{_bindir}/mstmread
+%{_bindir}/mstmwrite
+%{_bindir}/mstflint
+%{_bindir}/mstregdump
+%{_bindir}/mstmtserver
+%{_bindir}/mstvpd
+%{_bindir}/mstmcra
+%{_bindir}/mstconfig
+%{_bindir}/mstfwreset
+%{_bindir}/mstcongestion
+%{_bindir}/mstprivhost
+%{_bindir}/mstfwtrace
+%{_bindir}/mstresourcedump
+%{_bindir}/mstresourceparse
+%if %{enablefwmgr}
+ %{_bindir}/mstfwmanager
+ %{_bindir}/mstarchive
+%{CONF_DIR}/ca-bundle.crt
+%endif
+%if %{enableadbgenerictools}
+ %{_bindir}/mstreg
+ %{_bindir}/mstlink
+%endif
+
+%{_includedir}/mstflint/cmdif/icmd_cif_common.h
+%{_includedir}/mstflint/cmdif/icmd_cif_open.h
+%{_includedir}/mstflint/common/compatibility.h
+%{_includedir}/mstflint/mtcr.h
+%{_includedir}/mstflint/mtcr_com_defs.h
+%{_includedir}/mstflint/mtcr_mf.h
+%{_includedir}/mstflint/tools_layouts/adb_to_c_utils.h
+%{_includedir}/mstflint/tools_layouts/icmd_layouts.h
+%{_includedir}/mtcr_ul/mtcr.h
+%{_includedir}/mtcr_ul/mtcr_com_defs.h
+%{_libdir}/mstflint/libmtcr_ul.a
+%{_libdir}/libmtcr_ul.a
+
+%{mstflint_python_tools}/tools_version.py
+%{mstflint_python_tools}/mft_logger.py
+%{mstflint_python_tools}/mlxpci/*.py
+%{mstflint_python_tools}/mstfwtrace/*.py
+%{mstflint_python_tools}/mstfwreset/mstfwreset.py
+%{mstflint_python_tools}/mstfwreset/mlxfwresetlib/*.py
+%{mstflint_python_tools}/mtcr.py
+%{mstflint_python_tools}/cmtcr.so
+%{mstflint_python_tools}/cmdif.py
+%{mstflint_python_tools}/ccmdif.so
+%{mstflint_python_tools}/regaccess.py
+%{mstflint_python_tools}/regaccess_hca_ext_structs.py
+%{mstflint_python_tools}/regaccess_switch_ext_structs.py
+%{mstflint_python_tools}/rreg_access.so
+%{mstflint_python_tools}/dev_mgt.py
+%{mstflint_python_tools}/c_dev_mgt.so
+%{mstflint_python_tools}/mstprivhost/mstprivhost.py
+
+# Usually, python2 is the default python on a machine,
+# so we want to ignore python2 erros caused by incompatiblity with python3 syntax
+%define _python_bytecompile_errors_terminate_build 0
+
+%{mstflint_sdkdir}/libresource_dump_sdk.so
+%{mstflint_python_tools}/resourcetools/*.py
+%{mstflint_python_tools}/resourcetools/segments/*.py
+
+%{mstflint_python_tools}/resourcetools/resourcedump_lib/*.py
+%{mstflint_python_tools}/resourcetools/resourcedump_lib/commands/*.py
+%{mstflint_python_tools}/resourcetools/resourcedump_lib/cresourcedump/*.py
+%{mstflint_python_tools}/resourcetools/resourcedump_lib/fetchers/*.py
+%{mstflint_python_tools}/resourcetools/resourcedump_lib/filters/*.py
+%{mstflint_python_tools}/resourcetools/resourcedump_lib/utils/*.py
+%{mstflint_python_tools}/resourcetools/resourcedump_lib/validation/*.py
+
+%{mstflint_python_tools}/resourcetools/resourceparse_lib/*.py
+%{mstflint_python_tools}/resourcetools/resourceparse_lib/parsers/*.py
+%{mstflint_python_tools}/resourcetools/resourceparse_lib/resource_data/*.py
+%{mstflint_python_tools}/resourcetools/resourceparse_lib/utils/*.py
+
+%{_datadir}/mstflint
+%{_mandir}/man1/*
+
+
